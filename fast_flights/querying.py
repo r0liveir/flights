@@ -115,8 +115,8 @@ class Query:
 @dataclass
 class FlightQuery:
     date: str | Datetime
-    from_airport: str
-    to_airport: str
+    from_airport: str | list[str]
+    to_airport: str | list[str]
     max_stops: int | None = None
     airlines: list[str] | None = None
     earliest_departure_hour: int | None = None
@@ -129,6 +129,11 @@ class FlightQuery:
     max_layover_minutes: int | None = None
     less_emissions_only: bool = False
 
+    def airports(self, value: str | list[str]) -> list[Airport]:
+        if isinstance(value, str):
+            value = [value]
+        return [Airport(airport=code) for code in value]
+
     def pb(self) -> FlightData:
         if isinstance(self.date, str):
             date = self.date
@@ -137,8 +142,8 @@ class FlightQuery:
 
         return FlightData(
             date=date,
-            from_airport=Airport(airport=self.from_airport),
-            to_airport=Airport(airport=self.to_airport),
+            from_airport=self.airports(self.from_airport),
+            to_airport=self.airports(self.to_airport),
             max_stops=self.max_stops,
             airlines=self.airlines,
             earliest_departure_hour=self.earliest_departure_hour,

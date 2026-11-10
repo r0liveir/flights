@@ -7,6 +7,55 @@ from fast_flights.pb.flights_pb2 import Emissions, Info
 
 
 class QueryingTests(unittest.TestCase):
+    def test_serializes_multiple_and_mixed_airports(self) -> None:
+        cases = [
+            (["GRU", "CGH"], ["POA", "CWB"], ["GRU", "CGH"], ["POA", "CWB"]),
+            ("GRU", ["POA", "CWB"], ["GRU"], ["POA", "CWB"]),
+        ]
+
+        for from_airport, to_airport, expected_from, expected_to in cases:
+            with self.subTest(from_airport=from_airport, to_airport=to_airport):
+                query = create_query(
+                    flights=[
+                        FlightQuery(
+                            date="2099-01-02",
+                            from_airport=from_airport,
+                            to_airport=to_airport,
+                        )
+                    ]
+                )
+
+                flight = Info.FromString(query.to_bytes()).data[0]
+
+                self.assertEqual(
+                    [airport.airport for airport in flight.from_airport], expected_from
+                )
+                self.assertEqual(
+                    [airport.airport for airport in flight.to_airport], expected_to
+                )
+
+    def test_serializes_multiple_airports_with_connecting_airports(self) -> None:
+        query = create_query(
+            flights=[
+                FlightQuery(
+                    date="2099-01-02",
+                    from_airport=["GRU", "CGH"],
+                    to_airport=["POA", "CWB"],
+                    connecting_airports=["GIG", "BSB"],
+                )
+            ]
+        )
+
+        flight = Info.FromString(query.to_bytes()).data[0]
+
+        self.assertEqual(
+            [airport.airport for airport in flight.from_airport], ["GRU", "CGH"]
+        )
+        self.assertEqual(
+            [airport.airport for airport in flight.to_airport], ["POA", "CWB"]
+        )
+        self.assertEqual(list(flight.connecting_airports), ["GIG", "BSB"])
+
     def test_default_query_does_not_add_optional_filters(self) -> None:
         query = create_query(
             flights=[
