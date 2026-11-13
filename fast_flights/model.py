@@ -38,6 +38,8 @@ class SingleFlight:
     to_airport: Airport
     departure: SimpleDatetime
     arrival: SimpleDatetime
+    operating_airline: tuple[str, str]
+    """(IATA, flight number), used by Google"""
 
     duration: int
     """Unit: minutes"""

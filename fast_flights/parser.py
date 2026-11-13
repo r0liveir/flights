@@ -97,6 +97,8 @@ def parse_js(js: str):
             arrival_date = tuple(single_flight[21])
             arrival = SimpleDatetime(date=arrival_date, time=arrival_time)
 
+            operating_airline = tuple(single_flight[22][:2])
+
             plane_type = single_flight[17]
 
             duration = single_flight[11]
@@ -107,6 +109,7 @@ def parse_js(js: str):
                     to_airport=to_airport,
                     departure=departure,
                     arrival=arrival,
+                    operating_airline=operating_airline,
                     duration=duration,
                     plane_type=plane_type,
                 )
