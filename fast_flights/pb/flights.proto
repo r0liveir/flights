@@ -1,7 +1,26 @@
+// from pb/: protoc --python_out=. --pyi_out=. flights.proto
 syntax = "proto3";
 
 message Airport {
   string airport = 2;
+}
+
+message SummaryAirport {
+  uint32 marker = 1;
+  string airport = 2;
+}
+
+message SummarySelectedFlight {
+  string from_airport = 1;
+  string date = 2;
+  string to_airport = 3;
+  string airline = 5;
+  string flight_number = 6;
+}
+
+// Used in the summary URL
+message SummaryUnknown16 {
+  int64 value = 1;
 }
 
 message FlightData {
@@ -60,9 +79,29 @@ message Info {
   repeated Passenger passengers = 8;
   optional int32 max_price = 12;
   Baggage baggage = 13;
+
   optional bool hide_separate_and_self_transfer = 17;
   Trip trip = 19;
   optional bool exclude_basic_economy = 25;
+}
+
+message SummaryFlightData {
+  string date = 2;
+  repeated SummarySelectedFlight selected_flights = 4;
+  repeated SummaryAirport from_airport = 13;
+  repeated SummaryAirport to_airport = 14;
+}
+
+// Google uses this closely-related envelope for selected-flight summary URLs.
+message SummaryInfo {
+  uint32 summary_unknown_1 = 1;
+  uint32 summary_unknown_2 = 2;
+  repeated SummaryFlightData data = 3;
+  repeated Passenger passengers = 8 [packed = false];
+  Seat seat = 9;
+  uint32 summary_unknown_14 = 14;
+  SummaryUnknown16 summary_unknown_16 = 16;
+  Trip trip = 19;
 }
 
 message Price {

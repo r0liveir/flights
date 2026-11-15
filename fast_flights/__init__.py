@@ -12,6 +12,7 @@ from .querying import (
     FlightQuery,
     Passengers,
     Query,
+    SummaryQuery,
     create_query,
 )
 from .querying import (
@@ -22,6 +23,7 @@ __all__ = [
     "FlightQuery",
     "Query",
     "Passengers",
+    "SummaryQuery",
     "create_query",
     "create_filter",
     "get_flights",

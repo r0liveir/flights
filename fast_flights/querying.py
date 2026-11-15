@@ -1,8 +1,9 @@
 import typing
-from base64 import b64encode
+from base64 import b64encode, urlsafe_b64encode
 from dataclasses import dataclass
 from datetime import datetime as Datetime
 from typing import Literal
+from urllib.parse import urlencode
 
 from typing_extensions import override
 
@@ -14,8 +15,14 @@ from .pb.flights_pb2 import (
     Info,
     Passenger,
     Seat,
+    SummaryAirport,
+    SummaryFlightData,
+    SummaryInfo,
+    SummarySelectedFlight,
+    SummaryUnknown16,
     Trip,
 )
+from .model import Flights
 from .types import Currency, Language, SeatType, TripType
 
 
@@ -187,6 +194,68 @@ class Passengers:
             *(Passenger.INFANT_IN_SEAT for _ in range(self.infants_in_seat)),
             *(Passenger.INFANT_ON_LAP for _ in range(self.infants_on_lap)),
         ]
+
+
+@dataclass
+class SummaryQuery:
+    """Experimental: encode selected itineraries as a Google Flights summary URL."""
+
+    flights: list[Flights]
+    seat: SeatType = "economy"
+    trip: TripType = "one-way"
+    passengers: Passengers | None = None
+    language: str | Literal[""] | Language = ""
+    currency: str | Literal[""] | Currency = ""
+
+    def pb(self) -> SummaryInfo:
+        """Convert the selected itineraries to Google's summary protobuf."""
+        return SummaryInfo(
+            summary_unknown_1=28,
+            summary_unknown_2=2,
+            data=[self._flight_data(flight) for flight in self.flights],
+            passengers=(self.passengers or Passengers(adults=1)).pb(),
+            seat=SEAT_LOOKUP[self.seat],
+            summary_unknown_14=1,
+            summary_unknown_16=SummaryUnknown16(value=-1),
+            trip=TRIP_LOOKUP[self.trip],
+        )
+
+    @staticmethod
+    def _flight_data(flight: Flights) -> SummaryFlightData:
+        if not flight.flights:
+            raise ValueError("a summary itinerary must contain at least one flight")
+
+        first, last = flight.flights[0], flight.flights[-1]
+        return SummaryFlightData(
+            date=SummaryQuery._date(first.departure.date),
+            selected_flights=[
+                SummarySelectedFlight(
+                    from_airport=segment.from_airport.code,
+                    date=SummaryQuery._date(segment.departure.date),
+                    to_airport=segment.to_airport.code,
+                    airline=segment.operating_airline[0],
+                    flight_number=segment.operating_airline[1],
+                )
+                for segment in flight.flights
+            ],
+            from_airport=[SummaryAirport(marker=1, airport=first.from_airport.code)],
+            to_airport=[SummaryAirport(marker=1, airport=last.to_airport.code)],
+        )
+
+    @staticmethod
+    def _date(date: tuple[int, int, int]) -> str:
+        year, month, day = date
+        return f"{year:04}-{month:02}-{day:02}"
+
+    def url(self) -> str:
+        """Return the Google Flights summary URL."""
+        tfs = urlsafe_b64encode(self.pb().SerializeToString()).decode("ascii").rstrip("=")
+        params = {"tfs": tfs}
+        if self.language:
+            params["hl"] = self.language
+        if self.currency:
+            params["curr"] = self.currency
+        return "https://www.google.com/travel/flights?" + urlencode(params)
 
 
 SEAT_LOOKUP = {

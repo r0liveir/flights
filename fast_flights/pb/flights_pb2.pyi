@@ -57,6 +57,34 @@ class Airport(_message.Message):
     airport: str
     def __init__(self, airport: _Optional[str] = ...) -> None: ...
 
+class SummaryAirport(_message.Message):
+    __slots__ = ("marker", "airport")
+    MARKER_FIELD_NUMBER: _ClassVar[int]
+    AIRPORT_FIELD_NUMBER: _ClassVar[int]
+    marker: int
+    airport: str
+    def __init__(self, marker: _Optional[int] = ..., airport: _Optional[str] = ...) -> None: ...
+
+class SummarySelectedFlight(_message.Message):
+    __slots__ = ("from_airport", "date", "to_airport", "airline", "flight_number")
+    FROM_AIRPORT_FIELD_NUMBER: _ClassVar[int]
+    DATE_FIELD_NUMBER: _ClassVar[int]
+    TO_AIRPORT_FIELD_NUMBER: _ClassVar[int]
+    AIRLINE_FIELD_NUMBER: _ClassVar[int]
+    FLIGHT_NUMBER_FIELD_NUMBER: _ClassVar[int]
+    from_airport: str
+    date: str
+    to_airport: str
+    airline: str
+    flight_number: str
+    def __init__(self, from_airport: _Optional[str] = ..., date: _Optional[str] = ..., to_airport: _Optional[str] = ..., airline: _Optional[str] = ..., flight_number: _Optional[str] = ...) -> None: ...
+
+class SummaryUnknown16(_message.Message):
+    __slots__ = ("value",)
+    VALUE_FIELD_NUMBER: _ClassVar[int]
+    value: int
+    def __init__(self, value: _Optional[int] = ...) -> None: ...
+
 class FlightData(_message.Message):
     __slots__ = ("date", "from_airport", "to_airport", "max_stops", "airlines", "earliest_departure_hour", "latest_departure_hour", "earliest_arrival_hour", "latest_arrival_hour", "max_duration_minutes", "connecting_airports", "min_layover_minutes", "max_layover_minutes", "emissions")
     DATE_FIELD_NUMBER: _ClassVar[int]
@@ -116,6 +144,38 @@ class Info(_message.Message):
     trip: Trip
     exclude_basic_economy: bool
     def __init__(self, data: _Optional[_Iterable[_Union[FlightData, _Mapping]]] = ..., seat: _Optional[_Union[Seat, str]] = ..., passengers: _Optional[_Iterable[_Union[Passenger, str]]] = ..., max_price: _Optional[int] = ..., baggage: _Optional[_Union[Baggage, _Mapping]] = ..., hide_separate_and_self_transfer: _Optional[bool] = ..., trip: _Optional[_Union[Trip, str]] = ..., exclude_basic_economy: _Optional[bool] = ...) -> None: ...
+
+class SummaryFlightData(_message.Message):
+    __slots__ = ("date", "selected_flights", "from_airport", "to_airport")
+    DATE_FIELD_NUMBER: _ClassVar[int]
+    SELECTED_FLIGHTS_FIELD_NUMBER: _ClassVar[int]
+    FROM_AIRPORT_FIELD_NUMBER: _ClassVar[int]
+    TO_AIRPORT_FIELD_NUMBER: _ClassVar[int]
+    date: str
+    selected_flights: _containers.RepeatedCompositeFieldContainer[SummarySelectedFlight]
+    from_airport: _containers.RepeatedCompositeFieldContainer[SummaryAirport]
+    to_airport: _containers.RepeatedCompositeFieldContainer[SummaryAirport]
+    def __init__(self, date: _Optional[str] = ..., selected_flights: _Optional[_Iterable[_Union[SummarySelectedFlight, _Mapping]]] = ..., from_airport: _Optional[_Iterable[_Union[SummaryAirport, _Mapping]]] = ..., to_airport: _Optional[_Iterable[_Union[SummaryAirport, _Mapping]]] = ...) -> None: ...
+
+class SummaryInfo(_message.Message):
+    __slots__ = ("summary_unknown_1", "summary_unknown_2", "data", "passengers", "seat", "summary_unknown_14", "summary_unknown_16", "trip")
+    SUMMARY_UNKNOWN_1_FIELD_NUMBER: _ClassVar[int]
+    SUMMARY_UNKNOWN_2_FIELD_NUMBER: _ClassVar[int]
+    DATA_FIELD_NUMBER: _ClassVar[int]
+    PASSENGERS_FIELD_NUMBER: _ClassVar[int]
+    SEAT_FIELD_NUMBER: _ClassVar[int]
+    SUMMARY_UNKNOWN_14_FIELD_NUMBER: _ClassVar[int]
+    SUMMARY_UNKNOWN_16_FIELD_NUMBER: _ClassVar[int]
+    TRIP_FIELD_NUMBER: _ClassVar[int]
+    summary_unknown_1: int
+    summary_unknown_2: int
+    data: _containers.RepeatedCompositeFieldContainer[SummaryFlightData]
+    passengers: _containers.RepeatedScalarFieldContainer[Passenger]
+    seat: Seat
+    summary_unknown_14: int
+    summary_unknown_16: SummaryUnknown16
+    trip: Trip
+    def __init__(self, summary_unknown_1: _Optional[int] = ..., summary_unknown_2: _Optional[int] = ..., data: _Optional[_Iterable[_Union[SummaryFlightData, _Mapping]]] = ..., passengers: _Optional[_Iterable[_Union[Passenger, str]]] = ..., seat: _Optional[_Union[Seat, str]] = ..., summary_unknown_14: _Optional[int] = ..., summary_unknown_16: _Optional[_Union[SummaryUnknown16, _Mapping]] = ..., trip: _Optional[_Union[Trip, str]] = ...) -> None: ...
 
 class Price(_message.Message):
     __slots__ = ("price", "currency")
